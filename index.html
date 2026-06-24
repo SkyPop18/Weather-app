@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A beautiful claymorphism weather app — check current weather, 7-day forecast, and more for any city." />
+  <title>Clay Weather — Playful Weather App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-weather="clear">
+
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-container">
+
+    <header class="app-header" id="app-header">
+      <div class="header-left">
+        <div class="app-logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="40" height="40">
+            <circle cx="24" cy="24" r="10" fill="#f4a261" />
+            <g stroke="#f4a261" stroke-width="3" stroke-linecap="round">
+              <line x1="24" y1="4" x2="24" y2="10" />
+              <line x1="24" y1="38" x2="24" y2="44" />
+              <line x1="4" y1="24" x2="10" y2="24" />
+              <line x1="38" y1="24" x2="44" y2="24" />
+              <line x1="9.9" y1="9.9" x2="14.1" y2="14.1" />
+              <line x1="33.9" y1="33.9" x2="38.1" y2="38.1" />
+              <line x1="9.9" y1="38.1" x2="14.1" y2="33.9" />
+              <line x1="33.9" y1="14.1" x2="38.1" y2="9.9" />
+            </g>
+          </svg>
+        </div>
+        <h1 class="app-title">Clay Weather</h1>
+      </div>
+      <div class="header-right">
+        <div class="datetime-display" id="datetime-display">
+          <span class="date-text" id="date-text"></span>
+          <span class="time-text" id="time-text"></span>
+        </div>
+        <div class="unit-toggle" id="unit-toggle" role="switch" aria-checked="false" aria-label="Toggle temperature unit" tabindex="0">
+          <span class="unit-label unit-c">°C</span>
+          <div class="clay-toggle">
+            <div class="knob"></div>
+          </div>
+          <span class="unit-label unit-f">°F</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="search-section" id="search-section" aria-label="Search weather by city">
+      <form class="search-form" id="search-form" role="search">
+        <div class="search-input-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="text"
+            class="clay-input search-input"
+            id="search-input"
+            placeholder="Search any city..."
+            autocomplete="off"
+            aria-label="City name"
+          />
+        </div>
+        <button type="submit" class="clay-button search-button" id="search-button" aria-label="Search">
+          Search
+        </button>
+        <button type="button" class="clay-button location-button" id="location-button" aria-label="Use my location" title="Use my location">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="currentColor"/>
+          </svg>
+        </button>
+      </form>
+      <div class="search-error clay-card" id="search-error" role="alert" hidden>
+        <span class="error-icon">😕</span>
+        <span class="error-text" id="error-text">City not found. Please try again.</span>
+      </div>
+    </section>
+
+    <section class="favorites-section" id="favorites-section" aria-label="Favorite cities" hidden>
+      <div class="favorites-header">
+        <h2 class="section-title">⭐ Favorites</h2>
+      </div>
+      <div class="favorites-list" id="favorites-list"></div>
+    </section>
+
+    <section class="loading-section" id="loading-section" aria-label="Loading" hidden>
+      <div class="loading-grid">
+        <div class="loading-card clay-card loading-card-large">
+          <div class="shimmer"></div>
+        </div>
+        <div class="loading-card clay-card loading-card-stats">
+          <div class="shimmer"></div>
+        </div>
+        <div class="loading-forecast-row">
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+          <div class="loading-card clay-card loading-card-day"><div class="shimmer"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="weather-content" id="weather-content" hidden>
+
+      <section class="current-weather" id="current-weather" aria-label="Current weather">
+        <div class="current-main clay-card">
+          <div class="current-top">
+            <div class="current-location">
+              <h2 class="city-name" id="city-name"></h2>
+              <p class="weather-date" id="weather-date"></p>
+            </div>
+            <button class="favorite-btn" id="favorite-btn" aria-label="Add to favorites" title="Add to favorites">
+              <svg viewBox="0 0 24 24" width="28" height="28">
+                <path id="fav-star-path"
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="current-body">
+            <div class="weather-icon-wrap" id="weather-icon-wrap" aria-hidden="true">
+
+            </div>
+            <div class="temp-info">
+              <span class="current-temp" id="current-temp"></span>
+              <span class="current-condition" id="current-condition"></span>
+            </div>
+          </div>
+          <p class="feels-like" id="feels-like"></p>
+        </div>
+
+        <div class="weather-stats">
+          <div class="stat-card clay-card" id="stat-humidity">
+            <div class="stat-icon" aria-hidden="true">💧</div>
+            <div class="stat-value" id="stat-humidity-value"></div>
+            <div class="stat-label">Humidity</div>
+          </div>
+          <div class="stat-card clay-card" id="stat-wind">
+            <div class="stat-icon" aria-hidden="true">💨</div>
+            <div class="stat-value" id="stat-wind-value"></div>
+            <div class="stat-label">Wind Speed</div>
+          </div>
+          <div class="stat-card clay-card" id="stat-visibility">
+            <div class="stat-icon" aria-hidden="true">👁️</div>
+            <div class="stat-value" id="stat-visibility-value"></div>
+            <div class="stat-label">Visibility</div>
+          </div>
+          <div class="stat-card clay-card" id="stat-pressure">
+            <div class="stat-icon" aria-hidden="true">🌡️</div>
+            <div class="stat-value" id="stat-pressure-value"></div>
+            <div class="stat-label">Pressure</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="forecast-section" id="forecast-section" aria-label="7-day forecast">
+        <h2 class="section-title">📅 7-Day Forecast</h2>
+        <div class="forecast-grid" id="forecast-grid">
+
+        </div>
+      </section>
+
+    </main>
+
+    <section class="welcome-section" id="welcome-section">
+      <div class="welcome-card clay-card">
+        <div class="welcome-icon" aria-hidden="true">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="50" cy="50" r="22" fill="#f4a261" opacity="0.9"/>
+            <g stroke="#f4a261" stroke-width="3.5" stroke-linecap="round" opacity="0.7">
+              <line x1="50" y1="18" x2="50" y2="24"><animate attributeName="y2" values="24;22;24" dur="2s" repeatCount="indefinite"/></line>
+              <line x1="50" y1="76" x2="50" y2="82"><animate attributeName="y2" values="82;84;82" dur="2s" repeatCount="indefinite"/></line>
+              <line x1="18" y1="50" x2="24" y2="50"><animate attributeName="x2" values="24;22;24" dur="2s" repeatCount="indefinite"/></line>
+              <line x1="76" y1="50" x2="82" y2="50"><animate attributeName="x2" values="82;84;82" dur="2s" repeatCount="indefinite"/></line>
+            </g>
+            <ellipse cx="78" cy="72" rx="24" ry="18" fill="#b8e6d0" opacity="0.85"/>
+            <ellipse cx="62" cy="68" rx="18" ry="14" fill="#d4e8df" opacity="0.7"/>
+            <ellipse cx="90" cy="66" rx="14" ry="11" fill="#c8edd8" opacity="0.6"/>
+          </svg>
+        </div>
+        <h2 class="welcome-title">Welcome to Clay Weather!</h2>
+        <p class="welcome-text">Search for any city or use your location to get started.</p>
+      </div>
+    </section>
+
+    <div class="footer-spacer"></div>
+
+    <footer class="app-footer">
+      <div class="footer-credit">
+        <span>Made with 💖 by</span>
+        <a href="https://github.com/SkyPop18" target="_blank" rel="noopener noreferrer" class="author-link">Akshat Sharma</a>
+      </div>
+      <a href="https://supportme-akshat.netlify.app/supportme" target="_blank" rel="noopener noreferrer" class="clay-button support-button">
+        <span>🍵</span> Buy me a Tea
+      </a>
+    </footer>
+
+  </div>
+
+  <script src="js/weather-icons.js"></script>
+  <script src="js/weather-effects.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
