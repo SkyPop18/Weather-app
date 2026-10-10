@@ -21,6 +21,7 @@ A modern, fully responsive weather forecasting web application featuring a premi
 * **Unit Toggle**: Instantly switch between Celsius (°C) and Fahrenheit (°F) with local persistence.
 * **Claymorphic UI**: Playful design using soft 3D-like shadows, rounded borders, pastel palettes, and interactive clay-press states.
 * **Dynamic Animations**: Custom canvas-and-DOM particle system representing 6 different weather conditions behind the UI.
+* **Weather AI**: A Gemini-powered side panel that answers weather questions using the location and live forecast currently displayed in the app.
 
 ---
 
@@ -58,6 +59,26 @@ The background animation manager (`weather-effects.js`) switches between the fol
 No API keys are required for operation.
 * **Geocoding API**: `https://geocoding-api.open-meteo.com/v1/search?name={query}&count=1&language=en&format=json`
 * **Weather Forecast API**: `https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`
+
+## ✦ Run with Weather AI
+
+Weather AI uses a small local server so the Gemini API key is never delivered to the browser.
+
+1. Add your key to `.env` as `GEMINI_API_KEY=...` (this file is ignored by Git).
+2. From the project folder, run `node server.js`.
+3. Open [http://localhost:3000](http://localhost:3000) — do not open `index.html` directly when using AI.
+
+Each message includes the actively selected weather location, its coordinates, and the live current/7-day weather data. The page shows a reminder before users chat.
+
+## Deploy on Netlify
+
+1. Push this project to GitHub, then import that repository into Netlify. The included `netlify.toml` sends `/api/weather-assistant` to the protected serverless function.
+2. In **Project configuration → Environment variables**, add `GEMINI_API_KEY` with your Gemini key. Do not add it to `netlify.toml`, frontend JavaScript, or Git.
+3. Deploy. The function stores hashed-IP rate-limit timestamps in Netlify Blobs and enforces five Weather AI messages in a rolling 24-hour window. It does not save chat messages or weather details.
+
+The AI is restricted to weather, clothing, outdoor plans, and weather-aware food/hydration questions. Its five-message rolling quota is keyed by the visitor's IP address, read from the backend whenever the panel opens, and enforced by the server for every message. Replies can be requested in English, Hindi, Tamil, Marathi, Sanskrit, French, German, Spanish, Italian, Portuguese, Bengali, Telugu, Kannada, Malayalam, Urdu, Japanese, Korean, or Chinese. Visitors sharing one public IP also share the quota, and the limit may be bypassed by changing networks.
+
+The local server only serves the public HTML, CSS, and browser JavaScript paths; it will not serve `.env`, server code, Git files, or rate-limit data. The Gemini key is read only by the local server or Netlify Function and is never sent to the browser. Deploy through the connected Git repository and keep `.env` untracked; set the production key only in Netlify's Functions environment variables.
 
 ---
 

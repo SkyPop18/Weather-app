@@ -1,0 +1,12 @@
+[build]
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/weather-assistant/limit"
+  to = "/.netlify/functions/weather-assistant"
+  status = 200
+
+[[redirects]]
+  from = "/api/weather-assistant"
+  to = "/.netlify/functions/weather-assistant"
+  status = 200

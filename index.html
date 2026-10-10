@@ -40,6 +40,9 @@
         <h1 class="app-title">Clay Weather</h1>
       </div>
       <div class="header-right">
+        <button type="button" class="ai-open-button clay-button" id="ai-open-button" aria-haspopup="dialog" aria-controls="ai-panel" aria-label="Open Weather AI">
+          <span aria-hidden="true">✦</span> Ask AI
+        </button>
         <div class="datetime-display" id="datetime-display">
           <span class="date-text" id="date-text"></span>
           <span class="time-text" id="time-text"></span>
@@ -68,7 +71,21 @@
             placeholder="Search any city..."
             autocomplete="off"
             aria-label="City name"
+            role="combobox"
+            aria-expanded="false"
+            aria-autocomplete="list"
+            aria-controls="autocomplete-list"
+            aria-haspopup="listbox"
           />
+          <div class="autocomplete-dropdown clay-card" id="autocomplete-dropdown" hidden>
+            <div class="autocomplete-loading" id="autocomplete-loading" hidden>
+              <div class="shimmer-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <ul class="autocomplete-list" id="autocomplete-list" role="listbox" aria-label="Suggested locations">
+            </ul>
+          </div>
         </div>
         <button type="submit" class="clay-button search-button" id="search-button" aria-label="Search">
           Search
@@ -209,8 +226,64 @@
 
   </div>
 
+  <div class="ai-backdrop" id="ai-backdrop" hidden></div>
+  <aside class="ai-panel" id="ai-panel" aria-label="Weather AI assistant" aria-modal="true" role="dialog" aria-hidden="true" inert>
+    <div class="ai-panel-header">
+      <div>
+        <p class="ai-eyebrow">CLAY WEATHER</p>
+        <h2>Weather AI <span aria-hidden="true">✦</span></h2>
+      </div>
+      <button class="ai-close-button" id="ai-close-button" type="button" aria-label="Close Weather AI">×</button>
+    </div>
+    <div class="ai-context" id="ai-context">Search for a location, then ask anything about its weather.</div>
+    <label class="ai-language-control" for="ai-language">
+      <span>Reply language</span>
+      <select id="ai-language" aria-label="Choose AI reply language">
+        <option value="English">English</option>
+        <option value="Hindi">हिन्दी · Hindi</option>
+        <option value="Tamil">தமிழ் · Tamil</option>
+        <option value="Marathi">मराठी · Marathi</option>
+        <option value="Sanskrit">संस्कृतम् · Sanskrit</option>
+        <option value="French">Français · French</option>
+        <option value="German">Deutsch · German</option>
+        <option value="Spanish">Español · Spanish</option>
+        <option value="Italian">Italiano · Italian</option>
+        <option value="Portuguese">Português · Portuguese</option>
+        <option value="Bengali">বাংলা · Bengali</option>
+        <option value="Telugu">తెలుగు · Telugu</option>
+        <option value="Kannada">ಕನ್ನಡ · Kannada</option>
+        <option value="Malayalam">മലയാളം · Malayalam</option>
+        <option value="Urdu">اردو · Urdu</option>
+        <option value="Japanese">日本語 · Japanese</option>
+        <option value="Korean">한국어 · Korean</option>
+        <option value="Chinese">中文 · Chinese</option>
+      </select>
+    </label>
+    <div class="ai-messages" id="ai-messages" aria-live="polite">
+      <div class="ai-message ai-message-assistant">
+        <span class="ai-avatar" aria-hidden="true">☀</span>
+        <p>Hi! I’m your weather companion. Search a city or use your location, then I can help you plan around the weather.</p>
+      </div>
+    </div>
+    <div class="ai-quick-prompts" id="ai-quick-prompts" aria-label="Suggested questions">
+      <button type="button" class="ai-prompt">Summarize today’s weather</button>
+      <button type="button" class="ai-prompt">What should I wear?</button>
+      <button type="button" class="ai-prompt">Is it good to go outside?</button>
+    </div>
+    <form class="ai-composer" id="ai-form">
+      <label class="sr-only" for="ai-input">Ask Weather AI</label>
+      <textarea id="ai-input" rows="1" maxlength="1000" placeholder="Ask about the weather…"></textarea>
+      <button class="ai-send-button" id="ai-send-button" type="submit" aria-label="Send message">
+        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M3 11.5 21 3l-6.7 18-3-7-8.3-2.5Z" fill="currentColor" stroke="currentColor" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+    <p class="ai-privacy-note">Your active weather location and conditions are shared with Gemini only when you send a message.</p>
+  </aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="js/weather-icons.js"></script>
   <script src="js/weather-effects.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/ai-assistant.js"></script>
 </body>
 </html>

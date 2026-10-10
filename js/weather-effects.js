@@ -9,6 +9,8 @@
       pointer-events: none;
       z-index: 0;
       transition: opacity 520ms ease;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
     #we-back {
       position: fixed; inset: 0;
@@ -16,6 +18,8 @@
       overflow: hidden;
       z-index: 0;
       transition: opacity 520ms ease;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
     #we-front {
       position: fixed; inset: 0;
@@ -23,6 +27,8 @@
       overflow: hidden;
       z-index: 9999;
       transition: opacity 520ms ease;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     .we-sun-glow {
@@ -102,6 +108,8 @@
       border-radius: 50%;
       background: rgba(200, 210, 220, 0.12);
       filter: blur(55px);
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
       animation: weFogDrift ease-in-out infinite;
     }
     @keyframes weFogDrift {
@@ -115,6 +123,8 @@
       width: 110%; height: 150px;
       background: linear-gradient(to top, rgba(180, 200, 220, 0.22), transparent);
       filter: blur(28px);
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
       animation: weFogDrift 20s ease-in-out infinite;
     }
 
@@ -236,13 +246,15 @@
 
       document.addEventListener('visibilitychange', () => {
         this.visible = !document.hidden;
-        if (this.visible && !this.raf) {
+        if (this.visible && !this.raf && this.particles.length > 0) {
           this.lastTs = performance.now();
           this._loop();
         }
       });
 
-      this._loop();
+      if (this.particles.length > 0) {
+        this._loop();
+      }
     }
 
     _resize() {
@@ -290,6 +302,10 @@
         this._clearAll();
         this.current = type;
         this._setupWeather(type);
+
+        if (this.particles.length > 0) {
+          this._loop();
+        }
 
         if (this.canvas) this.canvas.style.opacity = '1';
         if (this.backEl) this.backEl.style.opacity = '1';
@@ -342,13 +358,13 @@
     }
 
     _setupCloudy() {
-      this._addClouds(6);
+      this._addClouds(4);
       this._addFogLayers(2);
     }
 
     _setupRain() {
       this._createRainParticles();
-      this._addClouds(3);
+      this._addClouds(2);
       this._addMist();
       this._startRipples();
       this._startGlassRain();
@@ -356,7 +372,7 @@
 
     _setupThunderstorm() {
       this._createRainParticles();
-      this._addClouds(4);
+      this._addClouds(3);
       this._addMist();
       this._startRipples();
       this._startGlassRain();
@@ -368,13 +384,14 @@
     }
 
     _setupFog() {
-      this._addFogLayers(5);
-      this._addClouds(3);
+      this._addFogLayers(4);
+      this._addClouds(2);
     }
 
     _loop() {
+      if (this.raf) return;
       const tick = (ts) => {
-        if (!this.visible) {
+        if (!this.visible || this.particles.length === 0) {
           this.raf = null;
           return;
         }
@@ -405,7 +422,8 @@
       this.particleType = 'sun';
       this.particles = [];
 
-      for (let i = 0; i < 45; i++) {
+      // 25 particles is visually sufficient; sun glow DOM handles the atmosphere
+      for (let i = 0; i < 25; i++) {
         this.particles.push({
           x: Math.random() * this.w,
           y: Math.random() * this.h,
@@ -457,7 +475,8 @@
 
       const angle = 0.15;
 
-      for (let i = 0; i < 200; i++) {
+      // Halved from 200+35: still dense-looking but significantly cheaper per frame
+      for (let i = 0; i < 100; i++) {
         const speed = 400 + Math.random() * 250;
         const vx = Math.sin(angle) * speed;
         const vy = Math.cos(angle) * speed;
@@ -473,7 +492,7 @@
         });
       }
 
-      for (let i = 0; i < 35; i++) {
+      for (let i = 0; i < 20; i++) {
         const speed = 600 + Math.random() * 350;
         const vx = Math.sin(angle) * speed;
         const vy = Math.cos(angle) * speed;
@@ -532,7 +551,8 @@
       this.particleType = 'snow';
       this.particles = [];
 
-      for (let i = 0; i < 110; i++) {
+      // Reduced from 110: 70 snowflakes is still lush, cuts draw calls by ~35%
+      for (let i = 0; i < 70; i++) {
         this.particles.push({
           x: Math.random() * this.w,
           y: Math.random() * this.h,
@@ -649,10 +669,11 @@
     }
 
     _startGlassRain() {
-      const MAX = 20;
+      const MAX = 12;
       let active = 0;
 
       const spawn = () => {
+        if (!this.visible) return;
         if (active >= MAX) return;
         if (this.current !== 'rain' && this.current !== 'thunderstorm') return;
         active++;
@@ -687,16 +708,19 @@
         this._timeouts.push(t);
       };
 
-      for (let i = 0; i < 8; i++) {
-        const t = setTimeout(spawn, i * 350);
+      for (let i = 0; i < 5; i++) {
+        const t = setTimeout(spawn, i * 500);
         this._timeouts.push(t);
       }
 
       const schedule = () => {
-        const delay = 400 + Math.random() * 800;
+        // Slower spawn rate to reduce DOM churn
+        const delay = 600 + Math.random() * 1200;
         const t = setTimeout(() => {
           if (this.current !== 'rain' && this.current !== 'thunderstorm') return;
-          spawn();
+          if (this.visible) {
+            spawn();
+          }
           schedule();
         }, delay);
         this._timeouts.push(t);
@@ -705,21 +729,40 @@
     }
 
     _startRipples() {
+      // Pool ripple elements to avoid constant DOM create/remove
+      const pool = [];
+      const POOL_SIZE = 6;
+      for (let i = 0; i < POOL_SIZE; i++) {
+        const ripple = document.createElement('div');
+        ripple.className = 'we-ripple';
+        ripple.style.display = 'none';
+        this.backEl.appendChild(ripple);
+        pool.push(ripple);
+      }
+      let poolIdx = 0;
+
       const schedule = () => {
-        const delay = 250 + Math.random() * 500;
+        // Slower than original 250-500ms to reduce DOM thrash
+        const delay = 400 + Math.random() * 800;
         const t = setTimeout(() => {
           if (this.current !== 'rain' && this.current !== 'thunderstorm') return;
+          if (!this.visible) {
+            schedule();
+            return;
+          }
 
-          const ripple = document.createElement('div');
-          ripple.className = 'we-ripple';
+          const ripple = pool[poolIdx % POOL_SIZE];
+          poolIdx++;
           const size = 12 + Math.random() * 24;
           ripple.style.width = size + 'px';
           ripple.style.height = (size * 0.35) + 'px';
           ripple.style.left = (Math.random() * 88 + 6) + '%';
           ripple.style.bottom = (Math.random() * 12 + 3) + '%';
-          this.backEl.appendChild(ripple);
-
-          ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+          ripple.style.display = '';
+          // Restart animation by toggling the class
+          ripple.classList.remove('we-ripple');
+          void ripple.offsetWidth;
+          ripple.classList.add('we-ripple');
 
           schedule();
         }, delay);
@@ -731,6 +774,12 @@
     _startLightning() {
       const flash = () => {
         if (this.current !== 'thunderstorm') return;
+        if (!this.visible) {
+          const nextDelay = 6000 + Math.random() * 6000;
+          const t = setTimeout(flash, nextDelay);
+          this._timeouts.push(t);
+          return;
+        }
 
         const dur = 100 + Math.random() * 50;
         const brightness = 0.12 + Math.random() * 0.08;
